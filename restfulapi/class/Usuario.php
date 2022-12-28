@@ -49,21 +49,26 @@ class Usuario
       //Datos de entrada
       $id = $datos['id'];
 
-      //Se valida que el ID sea numerico y mayor que cero
-      if (is_numeric($id) && (is_int($id)) && ($id > 0)) {
-        //Se ejecuta la sentencia SQL
-        $query = "SELECT id, name, last_name, email, phone, user, created FROM users WHERE id='$id'";
-        //Se almacena el resultado en la variable data
-        $data = $this->bd->query($query);
+      //Se valida que el id se esté enviando
+      if (!empty($id)) {
+        //Se valida que el ID sea numerico y mayor que cero
+        if (is_numeric($id) && (is_int($id)) && ($id > 0)) {
+          //Se ejecuta la sentencia SQL
+          $query = "SELECT id, name, last_name, email, phone, user, created FROM users WHERE id='$id'";
+          //Se almacena el resultado en la variable data
+          $data = $this->bd->query($query);
 
-        //Se retorna la respuesta
-        if ($data) {
-          return response(200, 'ok', $data[0]);
+          //Se retorna la respuesta
+          if ($data) {
+            return response(200, 'ok', $data[0]);
+          } else {
+            return response(400, 'No hay ningun usuario correspondiente a este ID', []);
+          }
         } else {
-          return response(400, 'No hay ningun usuario correspondiente a este ID', []);
+          return response(400, 'El ID debe ser numerico y mayor que cero.', []);
         }
       } else {
-        return response(400, 'El ID debe ser numerico y mayor que cero.', []);
+        return response(400, 'Debe digitar un ID', []);
       }
     } catch (Exception $e) {
       return response(500, $e->getMessage(), []);
@@ -172,14 +177,19 @@ class Usuario
       //Datos de entrada
       $id = $datos['id'];
 
-      //Se valida que el ID sea numerico y mayor a cero
-      if (is_numeric($id) && (is_int($id)) && ($id > 0)) {
-        //Se ejecuta la sentencia SQL
-        $query = "SELECT * FROM users WHERE id=$id";
-        //Se almacena la data
-        $data = $this->bd->query($query);
+      //Se valida que el ID se esté enviando
+      if (!empty($id)) {
+        //Se valida que el ID sea numerico y mayor a cero
+        if (is_numeric($id) && (is_int($id)) && ($id > 0)) {
+          //Se ejecuta la sentencia SQL
+          $query = "SELECT * FROM users WHERE id=$id";
+          //Se almacena la data
+          $data = $this->bd->query($query);
+        } else {
+          $data = [];
+        }
       } else {
-        $data = [];
+        return response(400, 'Debe digitar un ID', []);
       }
     } catch (Exception $e) {
       return response(500, $e->getMessage(), []);
