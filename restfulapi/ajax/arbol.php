@@ -1,6 +1,7 @@
 <?php
 require_once '../servicios/servicio.php';
 include_once '../class/Service.php';
+require_once '../class/jwt_utils.php';
 
 //Headers
 header("Access-Control-Allow-Origin: *");
@@ -20,13 +21,18 @@ $parametros = json_decode($json, true);
 //Se instancia la clase
 $servicio = new Service('gestion');
 
+$headers = array('alg' => 'HS256', 'typ' => 'JWT');
+$payload = array('username' => $user, 'exp' => (time() + 60));
+
+$jwt = generate_jwt($headers, $payload);
+
 /**Información de las opciones - case
  * 1 - encargado de listar todos los usuarios.
- * 2 - encargado de listar usuarios por id
+ * 2 - encargado de listar usuarios por su id.
  * 3 - encargado de crear usuarios.
- * 4 - encargado de loguear al usuario
+ * 4 - encargado de loguear al usuario.
  * 5 - encargado de actualizar los usuarios.
- * 6 - encargado de eliminar usuarios
+ * 6 - encargado de eliminar usuarios.
  */
 
 $opc = trim($parametros['opc']);
@@ -34,7 +40,8 @@ switch ($opc) {
   case '1':
     //Se crea el array de datos
     $data = [
-      't' => 'mostrarUsuario'
+      't' => 'mostrarUsuario',
+      'token' => $jwt
     ];
 
     //Se consume el servicio
@@ -47,7 +54,8 @@ switch ($opc) {
     //Se crea el array de datos
     $data = [
       't' => 'mostrarUsuarioId',
-      'id' => $id
+      'id' => $id,
+      'token' => $jwt
     ];
 
     //Se consume el servicio
@@ -72,7 +80,8 @@ switch ($opc) {
       'phone' => $phone,
       'user' => $user,
       'password' => $password,
-      'confirm_password' => $confirm_password
+      'confirm_password' => $confirm_password,
+      'token' => $jwt
     ];
 
     //Se consume el servicio
@@ -83,11 +92,13 @@ switch ($opc) {
     $user = isset($parametros['user']) ? $parametros['user'] : '';
     $password = isset($parametros['password']) ? $parametros['password'] : '';
 
+
     //Se crea el array de datos
     $data = [
       't' => 'logueoUsuario',
       'user' => $user,
-      'password' => $password
+      'password' => $password,
+      'token' => $jwt
     ];
 
     //Se consume el servicio
@@ -114,7 +125,8 @@ switch ($opc) {
       'phone' => $phone,
       'user' => $user,
       'password' => $password,
-      'confirm_password' => $confirm_password
+      'confirm_password' => $confirm_password,
+      'token' => $jwt
     ];
 
     //Se consume el servicio
@@ -127,7 +139,8 @@ switch ($opc) {
     //Se crea el array de datos
     $data = [
       't' => 'eliminarUsuario',
-      'id' => $id
+      'id' => $id,
+      'token' => $jwt
     ];
 
     //Se consume el servicio

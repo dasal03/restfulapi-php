@@ -22,25 +22,36 @@ function ServicioData($datos)
   if ($method === 'OPTIONS') {
     return response(500, 'Error servicio', []);
   } else if ($method !== 'POST') {
-    return response(500, 'metodo permitido: POST', []);
+    return response(500, 'metodo no permitido', []);
   } else {
+    $token = $datos['token'];
+    $is_valid_token = is_jwt_valid($token);
+
     switch ($datos['t']) {
-        //Lista todos los usuarios
-      case 'mostrarUsuario':
-        //Se consume la clase
-        $resp = $usuario->mostrarUsuario();
 
+      case 'mostrarUsuario': //Lista todos los usuarios
+
+        //Se valida que el token sea valido
+        if ($is_valid_token) {
+          //Se consume la clase
+          $resp = $usuario->mostrarUsuario($datos);
+        } else {
+          $resp = response(400, 'Token invalido', []);
+        }
         break;
 
-        //Lista los usuarios por el ID
-      case 'mostrarUsuarioId':
-        //Se consume la clase
-        $resp = $usuario->mostrarUsuarioId($datos);
+      case 'mostrarUsuarioId': //Lista los usuarios por el ID
 
+        //Se valida que el token sea valido
+        if ($is_valid_token) {
+          //Se consume la clase
+          $resp = $usuario->mostrarUsuarioId($datos);
+        } else {
+          $resp = response(400, 'Token invalido', []);
+        }
         break;
 
-        //Almacena los usuarios
-      case 'crearUsuario':
+      case 'crearUsuario': //Almacena los usuarios
         //Datos de entrada
         $name = isset($parametros['name']) ? $parametros['name'] : '';
         $last_name = isset($parametros['last_name']) ? $parametros['last_name'] : '';
@@ -49,7 +60,7 @@ function ServicioData($datos)
         $user = isset($parametros['user']) ? $parametros['user'] : '';
         $password = isset($parametros["password"]) ? $parametros["password"] : '';
 
-        //Se arma el array de parametros
+        //Array de parametros
         $campos = array(
           array('tipo' => 'string', 'campo' => 'name', 'valor' => $name, 'obligatorio' => true),
           array('tipo' => 'string', 'campo' => 'last_name', 'valor' => $last_name, 'obligatorio' => true),
@@ -59,10 +70,10 @@ function ServicioData($datos)
           array('tipo' => 'password', 'campo' => 'password', 'valor' => $password, 'obligatorio' => true)
         );
 
-        //Se consume el metodo para validar cada parametro del array
+        //Se valida el array
         $validar_campos = $val->validarCampos($campos);
 
-        //Se arma el array de parametros
+        //Array de parametros
         $longitudes = array(
           array('campo' => 'name', 'valor' => $name, 'longitud_minima' => 4, 'longitud_maxima' => 20),
           array('campo' => 'last_name', 'valor' => $last_name, 'longitud_minima' => 4, 'longitud_maxima' => 20),
@@ -72,7 +83,7 @@ function ServicioData($datos)
           array('campo' => 'password', 'valor' => $password, 'longitud_minima' => 8, 'longitud_maxima' => 15)
         );
 
-        //Se consume el metodo para validar cada parametro del array
+        //Se valida el array
         $validar_longitudes = $val->validarLongitudes($longitudes);
 
         //Se valida que haya pasado las validaciones
@@ -81,33 +92,44 @@ function ServicioData($datos)
         } else if ($validar_longitudes[ESTADO] != 1) {
           return response(400, $validar_longitudes[MENSAJE], []);
         } else {
-          //Se consume la clase
-          $resp = $usuario->crearUsuario($datos);
+          //Se valida que el token sea valido
+          if ($is_valid_token) {
+            //Se consume la clase
+            $resp = $usuario->crearUsuario($datos);
+          } else {
+            $resp = response(400, 'Token invalido', []);
+          }
         }
         break;
 
-        //Inicio de sesion del usuario
-      case 'logueoUsuario':
+      case 'logueoUsuario': //Logueo del usuario
         //Datos de entrada
         $user = isset($parametros["user"]) ? $parametros["user"] : '';
         $password = isset($parametros["password"]) ? $parametros["password"] : '';
 
-        //Se arma el array de parametros
+        //Array de parametros
         $campos = array(
-          array('tipo' => 'string', 'campo' => 'name', 'valor' => $user, 'obligatorio' => true),
-          array('tipo' => 'string', 'campo' => 'last_name', 'valor' => $password, 'obligatorio' => true)
+          array('tipo' => 'string', 'campo' => 'user', 'valor' => $user, 'obligatorio' => true),
+          array('tipo' => 'string', 'campo' => 'password', 'valor' => $password, 'obligatorio' => true)
         );
 
-        //Se consume el metodo para validar cada parametro del array
+        //Se valida el array
         $validar_campos = $val->validarCampos($campos);
 
-        //Se consume la clase
-        $resp = $usuario->logueoUsuario($datos);
-
+        //Se valida que hayan pasado las validaciones
+        if ($validar_campos[ESTADO] != 1) {
+          return response(400, $validar_campos[MENSAJE], []);
+        } else {
+          if ($is_valid_token) {
+            //Se consume la clase
+            $resp = $usuario->logueoUsuario($datos);
+          } else {
+            $resp = response(400, 'Token invalido', []);
+          }
+        }
         break;
 
-        //Actualiza los usuarios existentes
-      case 'actualizarUsuario':
+      case 'actualizarUsuario': //Actualiza los usuarios por su ID
         //Datos de entrada
         $name = isset($parametros['name']) ? $parametros['name'] : '';
         $last_name = isset($parametros['last_name']) ? $parametros['last_name'] : '';
@@ -116,7 +138,7 @@ function ServicioData($datos)
         $user = isset($parametros['user']) ? $parametros['user'] : '';
         $password = isset($parametros["password"]) ? $parametros["password"] : '';
 
-        //Se arma el array de parametros
+        //Array de parametros
         $campos = array(
           array('tipo' => 'string', 'campo' => 'name', 'valor' => $name, 'obligatorio' => true),
           array('tipo' => 'string', 'campo' => 'last_name', 'valor' => $last_name, 'obligatorio' => true),
@@ -126,10 +148,10 @@ function ServicioData($datos)
           array('tipo' => 'password', 'campo' => 'password', 'valor' => $password, 'obligatorio' => true)
         );
 
-        //Se consume el metodo para validar cada parametro del array
+        //Se valida el array
         $validar_campos = $val->validarCampos($campos);
 
-        //Se arma el array de parametros
+        //Array de parametros
         $longitudes = array(
           array('campo' => 'name', 'valor' => $name, 'longitud_minima' => 4, 'longitud_maxima' => 20),
           array('campo' => 'last_name', 'valor' => $last_name, 'longitud_minima' => 4, 'longitud_maxima' => 20),
@@ -139,7 +161,7 @@ function ServicioData($datos)
           array('campo' => 'password', 'valor' => $password, 'longitud_minima' => 8, 'longitud_maxima' => 15)
         );
 
-        //Se consume el metodo para validar cada parametro del array
+        //Se valida el array
         $validar_longitudes = $val->validarLongitudes($longitudes);
 
         //Se valida que haya pasado las validaciones
@@ -148,15 +170,24 @@ function ServicioData($datos)
         } else if ($validar_longitudes[ESTADO] != 1) {
           return response(400, $validar_longitudes[MENSAJE], []);
         } else {
-          $resp = $usuario->actualizarUsuario($datos);
+
+          if ($is_valid_token) {
+            //Se consume la clase
+            $resp = $usuario->actualizarUsuario($datos);
+          } else {
+            $resp = response(400, 'Token invalido', []);
+          }
         }
         break;
 
-        //Elimina los usuarios existentes por el ID
-      case 'eliminarUsuario':
-        //Se consume la clase
-        $resp = $usuario->eliminarUsuario($datos);
+      case 'eliminarUsuario': //Elimina los usuarios por su ID
 
+        if ($is_valid_token) {
+          //Se consume la clase
+          $resp = $usuario->eliminarUsuario($datos);
+        } else {
+          $resp = response(400, 'Token invalido', []);
+        }
         break;
     }
   }

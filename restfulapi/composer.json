@@ -1,0 +1,9 @@
+{
+    "name": "dasal03/restfulapi",
+    "description": "Api de practica",
+    "type": "project",
+    "minimum-stability": "stable",
+    "require": {
+        "firebase/php-jwt": "^6.3"
+    }
+}

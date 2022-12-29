@@ -22,14 +22,14 @@ class Usuario
   public function mostrarUsuario()
   {
     try {
-      //Se ejecuta la sentencia SQL
-      $query = "SELECT id, name, last_name, email, phone, user, created FROM users";
-      //Se almacena el resultado en la variable data
-      $data = $this->bd->query($query);
 
-      //Se retorna la respuesta
+      $query = "SELECT id, name, last_name, email, phone, user, created FROM users";
+
+      $data = $this->bd->query($query); //Respuesta de la consulta SQL
+
+      //Se valida que haya data en la bd
       if ($data) {
-        return response(200, 'ok', $data);
+        return response(200, 'ok', $data); //Se retorna la data
       } else {
         return response(400, 'No hay usuarios en base de datos', []);
       }
@@ -49,23 +49,27 @@ class Usuario
       //Datos de entrada
       $id = $datos['id'];
 
-      //Se valida que el id se esté enviando
+      //Se valida que el id no sea vacio
       if (!empty($id)) {
-        //Se valida que el ID sea numerico y mayor que cero
-        if (is_numeric($id) && (is_int($id)) && ($id > 0)) {
-          //Se ejecuta la sentencia SQL
-          $query = "SELECT id, name, last_name, email, phone, user, created FROM users WHERE id='$id'";
-          //Se almacena el resultado en la variable data
-          $data = $this->bd->query($query);
+        //Se valida que el ID sea numerico
+        if (is_int($id)) {
+          //Se valida que el id sea mayor y diferente que cero
+          if (($id > 0) && ($id !== 0)) {
+            $query = "SELECT id, name, last_name, email, phone, user, created FROM users WHERE id='$id'";
 
-          //Se retorna la respuesta
-          if ($data) {
-            return response(200, 'ok', $data[0]);
+            $data = $this->bd->query($query); //Respuesta de la consulta SQL
+
+            //Se valida que haya data en la bd
+            if ($data) {
+              return response(200, 'ok', $data[0]); //Se retorna la data
+            } else {
+              return response(400, 'No hay ningun usuario correspondiente a este ID', []);
+            }
           } else {
-            return response(400, 'No hay ningun usuario correspondiente a este ID', []);
+            return response(400, 'El ID debe ser mayor a cero', []);
           }
         } else {
-          return response(400, 'El ID debe ser numerico y mayor que cero.', []);
+          return response(400, 'El ID debe ser numerico', []);
         }
       } else {
         return response(400, 'Debe digitar un ID', []);
@@ -92,27 +96,27 @@ class Usuario
       $password = $datos['password'];
       $confirm_password = $datos['confirm_password'];
 
+      //Se valida que la contraseña sea igual a la confirmación
       if ($password !== $confirm_password) {
         return response(400, 'Las contraseñas no coinciden', []);
       } else {
-        //Se valida que el usuario no exista
-        $query = "SELECT * FROM users WHERE user='$user'";
-        $resultado = $this->bd->query($query);
 
+        $query = "SELECT * FROM users WHERE user='$user'";
+
+        $resultado = $this->bd->query($query); //Respuesta de la consulta SQL
+
+        //Se valida que el usuario no exista en la bd
         if ($resultado) {
           return response(400, 'Este usuario ya está en uso', []);
         } else {
-          //Se encripta la contrasena
-          $hash = password_hash($password, PASSWORD_DEFAULT);
+          $hash = password_hash($password, PASSWORD_DEFAULT); //Se encripta la contraseña
 
-          //Se hace la consulta SQL
           $columnas = "name, last_name, email, phone, user, password";
           $valores = "'$name', '$last_name', '$email', '$phone', '$user', '$hash'";
           $query = "INSERT INTO users ($columnas) VALUES ($valores)";
-          //Se almacena la data
-          $resultado = $this->bd->query($query);
 
-          //Se retorna la respuesta
+          $resultado = $this->bd->query($query); //Respuesta de la consulta SQL
+
           return response(200, 'ok', []);
         }
       }
@@ -122,7 +126,7 @@ class Usuario
   }
 
   /**
-   * Verifica que el usuario y la contraseña suministrada sean correctos y loguea al usuario
+   * Valida el usuario y la contraseña suministrados
    *
    * @param $datos
    */
@@ -133,30 +137,28 @@ class Usuario
       $user = $datos['user'];
       $password = $datos['password'];
 
-      //Se ejecuta la sentencia SQL
       $query = "SELECT * FROM users WHERE user='$user'";
-      //Se almacena la data
-      $resultado = $this->bd->query($query);
-      //Se trae de la base de datos la contraseña encriptada
-      $hash = $resultado[0]['password'];
 
-      //Se arma el array con la data que se va a retornar
-      $data = [
-        'name' => $resultado[0]['name'],
-        'last_name' => $resultado[0]['last_name'],
-        'email' => $resultado[0]['email'],
-        'phone' => $resultado[0]['phone'],
-        'user' => $resultado[0]['user']
-      ];
+      $resultado = $this->bd->query($query); //Resultado de la consulta SQL
+
+      $hash = $resultado[0]['password']; //Contraseña encriptada de la bd
 
       //Se valida que el usuario exista
       if (($resultado)) {
         //Se valida que la contraseña almacenada coincida con la suministrada
         if (password_verify($password, $hash)) {
-          //Se retorna la respuesta
+          $data = array(
+            "id" => $resultado[0]['id'],
+            "firstname" => $resultado[0]['name'],
+            "lastname" => $resultado[0]['last_name'],
+            "email" => $resultado[0]['email'],
+            "phone" => $resultado[0]['phone'],
+            "user" => $resultado[0]['user'],
+          );
+
           return response(200, 'ok', $data);
         } else {
-          return response(400, 'Contraseña incorrecta', []);
+          return response(404, 'Contraseña incorrecta', []);
         }
       } else {
         return response(400, 'Usuario incorrecto', []);
@@ -177,24 +179,36 @@ class Usuario
       //Datos de entrada
       $id = $datos['id'];
 
-      //Se valida que el ID se esté enviando
+      //Se valida que el ID no sea vacio
       if (!empty($id)) {
-        //Se valida que el ID sea numerico y mayor a cero
-        if (is_numeric($id) && (is_int($id)) && ($id > 0)) {
-          //Se ejecuta la sentencia SQL
-          $query = "SELECT * FROM users WHERE id=$id";
-          //Se almacena la data
-          $data = $this->bd->query($query);
+        //Se valida que el ID sea numerico
+        if (is_int($id)) {
+          //Se valida que el ID sea mayor y diferente que cero
+          if (($id > 0) && ($id !== 0)) {
+
+            $query = "SELECT * FROM users WHERE id=$id";
+
+            $resultado = $this->bd->query($query); //Respuesta de la consulta
+
+            //Se valida que el usuario exista
+            if ($resultado) {
+              $resp = response(200, 'Ok', []);
+            } else {
+              $resp = response(400, 'El usuario no existe', []);
+            }
+          } else {
+            $resp = response(400, 'El ID debe ser mayor y diferente que cero', []);
+          }
         } else {
-          $data = [];
+          $resp = response(400, 'El ID debe ser numerico', []);
         }
       } else {
-        return response(400, 'Debe digitar un ID', []);
+        $resp = response(400, 'Debe digitar un ID', []);
       }
     } catch (Exception $e) {
-      return response(500, $e->getMessage(), []);
+      $resp = response(500, $e->getMessage(), []);
     }
-    return $data;
+    return $resp;
   }
 
   /**
@@ -205,35 +219,31 @@ class Usuario
   public function actualizarUsuario($datos)
   {
     try {
-      //Se llama la función para validar que el usuario exista
+      //Se llama al metodo que valida que exista data relacionada con el ID
       $existencia = $this->validarExistencia($datos);
 
-      if ($existencia) {
-        //Datos de entrada
-        $id = $datos['id'];
-        $name = $datos['name'];
-        $last_name = $datos['last_name'];
-        $email = $datos['email'];
-        $phone = $datos['phone'];
-        $user = $datos['user'];
-        $password = $datos['password'];
-        $confirm_password = $datos['confirm_password'];
+      //Datos de entrada
+      $id = $datos['id'];
+      $name = $datos['name'];
+      $last_name = $datos['last_name'];
+      $email = $datos['email'];
+      $phone = $datos['phone'];
+      $user = $datos['user'];
+      $password = $datos['password'];
+      $confirm_password = $datos['confirm_password'];
 
-        if ($password !== $confirm_password) {
-          return response(400, 'Las contraseñas no coinciden', []);
-        } else {
-          //Se ejecuta la sentencia SQL
-          $valores = "name='$name', last_name='$last_name', email='$email', phone='$phone', user='$user', password='$password'";
-          $query = "UPDATE users SET $valores WHERE id=$id";
-          //Se almacena la data
-          $resultado = $this->bd->query($query);
-
-          //Se retorna la respuesta
-          return response(200, 'ok', []);
-        }
+      //Se valida que la contraseña sea igual a la validación
+      if ($password !== $confirm_password) {
+        return response(400, 'Las contraseñas no coinciden', []);
       } else {
-        return response(400, 'El usuario que intenta actualizar no existe', []);
+        $hash = password_hash($password, PASSWORD_DEFAULT); //Se encripta la contraseña
+
+        $valores = "name='$name', last_name='$last_name', email='$email', phone='$phone', user='$user', password='$hash'";
+        $query = "UPDATE users SET $valores WHERE id=$id";
+
+        $resultado = $this->bd->query($query); //Resultado de la consulta
       }
+      return $existencia;
     } catch (Exception $e) {
       return response(500, $e->getMessage(), []);
     }
@@ -247,23 +257,17 @@ class Usuario
   public function eliminarUsuario($datos)
   {
     try {
-      //Se llama la función que valida que el usuario exista
+      //Se llama al metodo que valida que exista data relacionada con el ID
       $existencia = $this->validarExistencia($datos);
 
-      if ($existencia) {
-        //Datos de entrada
-        $id = $datos['id'];
+      //Datos de entrada
+      $id = $datos['id'];
 
-        //Se ejecuta la sentencia SQL
-        $query = "DELETE FROM users WHERE id=$id";
-        //Se almacena la data
-        $resultado = $this->bd->query($query);
+      $query = "DELETE FROM users WHERE id=$id";
 
-        //Se retorna la respuesta
-        return response(200, 'ok', []);
-      } else {
-        return response(400, 'El usuario que intenta eliminar no existe', []);
-      }
+      $resultado = $this->bd->query($query); //Respuesta de la consulta
+
+      return $existencia;
     } catch (Exception $e) {
       return response(500, $e->getMessage(), []);
     }
