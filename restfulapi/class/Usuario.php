@@ -49,30 +49,19 @@ class Usuario
       //Datos de entrada
       $id = $datos['id'];
 
-      //Se valida que el id no sea vacio
-      if (!empty($id)) {
-        //Se valida que el ID sea numerico
-        if (is_int($id)) {
-          //Se valida que el id sea mayor y diferente que cero
-          if (($id > 0) && ($id !== 0)) {
-            $query = "SELECT id, name, last_name, email, phone, user, created FROM users WHERE id='$id'";
+      if ($id > 0) {
+        $query = "SELECT id, name, last_name, email, phone, user, created FROM users WHERE id='$id'";
 
-            $data = $this->bd->query($query); //Respuesta de la consulta SQL
+        $data = $this->bd->query($query); //Respuesta de la consulta SQL
 
-            //Se valida que haya data en la bd
-            if ($data) {
-              return response(200, 'ok', $data[0]); //Se retorna la data
-            } else {
-              return response(400, 'No hay ningun usuario correspondiente a este ID', []);
-            }
-          } else {
-            return response(400, 'El ID debe ser mayor a cero', []);
-          }
+        //Se valida que haya data en la bd
+        if ($data) {
+          return response(200, 'ok', $data[0]); //Se retorna la data
         } else {
-          return response(400, 'El ID debe ser numerico', []);
+          return response(400, 'No hay ningun usuario correspondiente a este ID', []);
         }
       } else {
-        return response(400, 'Debe digitar un ID', []);
+        return response(400, 'El ID debe ser mayor a cero', []);
       }
     } catch (Exception $e) {
       return response(500, $e->getMessage(), []);
@@ -179,31 +168,20 @@ class Usuario
       //Datos de entrada
       $id = $datos['id'];
 
-      //Se valida que el ID no sea vacio
-      if (!empty($id)) {
-        //Se valida que el ID sea numerico
-        if (is_int($id)) {
-          //Se valida que el ID sea mayor y diferente que cero
-          if (($id > 0) && ($id !== 0)) {
+      if ($id > 0) {
 
-            $query = "SELECT * FROM users WHERE id=$id";
+        $query = "SELECT * FROM users WHERE id=$id";
 
-            $resultado = $this->bd->query($query); //Respuesta de la consulta
+        $resultado = $this->bd->query($query); //Respuesta de la consulta
 
-            //Se valida que el usuario exista
-            if ($resultado) {
-              $resp = response(200, 'Ok', []);
-            } else {
-              $resp = response(400, 'El usuario no existe', []);
-            }
-          } else {
-            $resp = response(400, 'El ID debe ser mayor y diferente que cero', []);
-          }
+        //Se valida que el usuario exista
+        if ($resultado) {
+          $resp = response(200, 'Ok', []);
         } else {
-          $resp = response(400, 'El ID debe ser numerico', []);
+          $resp = response(400, 'El usuario no existe', []);
         }
       } else {
-        $resp = response(400, 'Debe digitar un ID', []);
+        $resp = response(400, 'El ID debe ser mayor a cero', []);
       }
     } catch (Exception $e) {
       $resp = response(500, $e->getMessage(), []);

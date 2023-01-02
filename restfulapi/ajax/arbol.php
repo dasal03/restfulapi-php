@@ -23,7 +23,7 @@ $servicio = new Service('gestion');
 
 $headers = array('alg' => 'HS256', 'typ' => 'JWT');
 $payload = array('username' => $user, 'exp' => (time() + 60));
-
+//Se genera el token
 $jwt = generate_jwt($headers, $payload);
 
 /**Información de las opciones - case

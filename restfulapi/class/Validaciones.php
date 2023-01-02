@@ -69,10 +69,7 @@ class Validaciones
           $number    = preg_match('@[0-9]@', $valor);
           $specialChars = preg_match('@[^\w]@', $valor);
 
-          if (mb_strlen($valor) < 8) {
-            $resultado[ESTADO] = 2;
-            $resultado[MENSAJE] = "La contrasena debe tener minimo 8 caracteres";
-          } else if (!$uppercase) {
+          if (!$uppercase) {
             $resultado[ESTADO] = 2;
             $resultado[MENSAJE] = "La contraseña debe contener al menos una mayuscula";
           } else if (!$lowercase) {
